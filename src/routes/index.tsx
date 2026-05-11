@@ -131,10 +131,11 @@ function HomePage() {
 
   const multiplicador = useMemo(() => ((Number(salario) || 0) < 4000 ? 10 : 20), [salario]);
   const orcamentoEstimado = useMemo(() => {
-    const oc = Number(orcamentoCliente);
-    if (oc > 0) return pagamento === "entrada" ? oc * 5 : oc;
-    return (Number(salario) || 0) * multiplicador;
-  }, [salario, multiplicador, orcamentoCliente, pagamento]);
+    const base = (Number(salario) || 0) * multiplicador;
+    const oc = Number(orcamentoCliente) || 0;
+    // Sempre usa salário × multiplicador como base; orçamento informado complementa
+    return base + oc;
+  }, [salario, multiplicador, orcamentoCliente]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();

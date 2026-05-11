@@ -213,12 +213,60 @@ function HomePage() {
                 </Field>
               </div>
 
-              {orcamento > 0 && (
-                <div className="text-sm text-muted-foreground flex items-center gap-2">
-                  <Wallet className="h-4 w-4 text-primary" /> Orçamento estimado ({multiplicador}× salário):
-                  <span className="font-semibold text-foreground">{formatBRL(orcamento)}</span>
+              {orcamentoEstimado > 0 && (
+                <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
+                  <Wallet className="h-4 w-4 text-primary" />
+                  {Number(orcamentoCliente) > 0 ? "Orçamento informado" : `Orçamento estimado (${multiplicador}× salário)`}
+                  {pagamento === "entrada" && Number(orcamentoCliente) > 0 ? " (entrada × 5)" : ""}:
+                  <span className="font-semibold text-foreground">{formatBRL(orcamentoEstimado)}</span>
                 </div>
               )}
+
+              {/* Opcionais */}
+              <div className="rounded-lg border border-border bg-secondary/30 p-4 space-y-4">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Opcional</h3>
+                <div className="grid gap-5 md:grid-cols-3">
+                  <Field label="Orçamento (R$)" icon={<Wallet className="h-4 w-4" />}>
+                    <Input
+                      type="number"
+                      min={0}
+                      value={orcamentoCliente}
+                      onChange={(e) => setOrcamentoCliente(e.target.value)}
+                      placeholder="Ex: 50000"
+                    />
+                  </Field>
+                  <Field label="Forma de pagamento" icon={<DollarSign className="h-4 w-4" />}>
+                    <div className="grid grid-cols-2 gap-2">
+                      {(["avista", "entrada"] as Pagamento[]).map((p) => (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => setPagamento(p)}
+                          className={`rounded-md border-2 px-3 py-2 text-sm font-medium transition-all ${
+                            pagamento === p
+                              ? "border-primary bg-primary/10 text-foreground"
+                              : "border-border bg-background/40 text-muted-foreground hover:border-primary/50"
+                          }`}
+                        >
+                          {p === "avista" ? "À vista" : "Entrada"}
+                        </button>
+                      ))}
+                    </div>
+                  </Field>
+                  <Field label="Ano do veículo" icon={<Car className="h-4 w-4" />}>
+                    <select
+                      value={anoPreferido}
+                      onChange={(e) => setAnoPreferido(e.target.value)}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="">Qualquer ano</option>
+                      {anosDisponiveis.map((a) => (
+                        <option key={a} value={a}>{a}</option>
+                      ))}
+                    </select>
+                  </Field>
+                </div>
+              </div>
 
               <div>
                 <h3 className="flex items-center gap-2 font-semibold mb-3">

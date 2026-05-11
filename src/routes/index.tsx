@@ -23,39 +23,50 @@ export const Route = createFileRoute("/")({
 const TIERS: VehicleTier[] = ["Custo-Benefício", "Conforto", "Top de Linha"];
 
 function pickThree(vehicles: Vehicle[], categoria: VehicleCategory, salario: number): Vehicle[] {
-  const orcamento = salario * 20;
   const lowIncome = salario < 4000;
+  const multiplier = lowIncome ? 10 : 20;
+  const orcamento = salario * multiplier;
 
-  // Tetos por tier (mais conservadores para renda baixa)
-  const caps = lowIncome
-    ? { "Custo-Benefício": orcamento * 0.7, Conforto: orcamento * 1.0, "Top de Linha": orcamento * 1.2 }
-    : { "Custo-Benefício": orcamento * 0.8, Conforto: orcamento * 1.15, "Top de Linha": orcamento * 1.6 };
+  // Quanto maior o salário, mais "esticamos" o teto do top de linha
+  const stretch = Math.min(2.2, 1 + salario / 10000); // 1.0 a 2.2
+
+  const caps = {
+    "Custo-Benefício": orcamento * (lowIncome ? 0.75 : 0.85),
+    Conforto: orcamento * (lowIncome ? 1.0 : 1.15),
+    "Top de Linha": orcamento * (lowIncome ? 1.1 : stretch),
+  };
+
+  // Não considerar "muito antigo" no custo-benefício (últimos ~6 anos)
+  const anoAtual = new Date().getFullYear();
+  const minAnoBudget = anoAtual - 6;
 
   const inCat = vehicles.filter((v) => v.categoria === categoria);
   if (inCat.length === 0) return [];
 
-  // Ordena por preço dentro da categoria para particionar em "velho/barato", "médio", "novo/caro"
   const used = new Set<string>();
 
-  // Custo-Benefício → mais antigo e mais em conta (prioriza preço baixo, depois ano antigo)
+  // Custo-Benefício → barato mas não muito antigo
   const budgetPool = inCat
-    .filter((v) => v.preco <= caps["Custo-Benefício"])
-    .sort((a, b) => a.preco - b.preco || a.ano - b.ano);
-  const budget = (budgetPool[0] || [...inCat].sort((a, b) => a.preco - b.preco)[0]);
+    .filter((v) => v.preco <= caps["Custo-Benefício"] && v.ano >= minAnoBudget)
+    .sort((a, b) => a.preco - b.preco || b.ano - a.ano);
+  const budget =
+    budgetPool[0] ||
+    inCat.filter((v) => v.ano >= minAnoBudget).sort((a, b) => a.preco - b.preco)[0] ||
+    [...inCat].sort((a, b) => a.preco - b.preco)[0];
   if (budget) used.add(budget.id);
 
-  // Top de Linha → mais novo (e premium), respeitando teto
+  // Top de Linha → mais novo e mais caro (quanto maior o salário, maior o teto)
   const topPool = inCat
     .filter((v) => !used.has(v.id) && v.preco <= caps["Top de Linha"])
-    .sort((a, b) => b.ano - a.ano || b.preco - a.preco);
+    .sort((a, b) => b.preco - a.preco || b.ano - a.ano);
   const top =
     topPool[0] ||
     inCat.filter((v) => !used.has(v.id)).sort((a, b) => b.ano - a.ano)[0];
   if (top) used.add(top.id);
 
-  // Conforto → meio termo (preço/ano entre os dois, próximo do orçamento)
-  const minPreco = budget ? Math.min(budget.preco, top?.preco ?? Infinity) : 0;
-  const maxPreco = top ? Math.max(top.preco, budget?.preco ?? 0) : Infinity;
+  // Conforto → meio termo, próximo do orçamento
+  const minPreco = Math.min(budget?.preco ?? 0, top?.preco ?? Infinity);
+  const maxPreco = Math.max(budget?.preco ?? 0, top?.preco ?? Infinity);
   const comfortPool = inCat
     .filter((v) => !used.has(v.id) && v.preco <= caps["Conforto"] && v.preco >= minPreco && v.preco <= maxPreco)
     .sort((a, b) => Math.abs(a.preco - orcamento) - Math.abs(b.preco - orcamento));
@@ -65,7 +76,6 @@ function pickThree(vehicles: Vehicle[], categoria: VehicleCategory, salario: num
       .filter((v) => !used.has(v.id))
       .sort((a, b) => Math.abs(a.preco - orcamento) - Math.abs(b.preco - orcamento))[0];
 
-  // Reatribui tiers conforme escolha (sempre na ordem Custo-Benefício, Conforto, Top de Linha)
   const order: { v: Vehicle | undefined; tier: VehicleTier }[] = [
     { v: budget, tier: "Custo-Benefício" },
     { v: comfort, tier: "Conforto" },
@@ -90,7 +100,8 @@ function HomePage() {
     setVehicles(loadVehicles());
   }, []);
 
-  const orcamento = useMemo(() => (Number(salario) || 0) * 20, [salario]);
+  const multiplicador = useMemo(() => ((Number(salario) || 0) < 4000 ? 10 : 20), [salario]);
+  const orcamento = useMemo(() => (Number(salario) || 0) * multiplicador, [salario, multiplicador]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -164,7 +175,7 @@ function HomePage() {
 
               {orcamento > 0 && (
                 <div className="text-sm text-muted-foreground flex items-center gap-2">
-                  <Wallet className="h-4 w-4 text-primary" /> Orçamento estimado (20× salário):
+                  <Wallet className="h-4 w-4 text-primary" /> Orçamento estimado ({multiplicador}× salário):
                   <span className="font-semibold text-foreground">{formatBRL(orcamento)}</span>
                 </div>
               )}

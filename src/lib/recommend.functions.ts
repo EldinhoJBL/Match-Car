@@ -17,7 +17,8 @@ export const gerarRecomendacao = createServerFn({ method: "POST" })
       return { texto: "Configuração de IA indisponível. Mostrando seleção baseada em regras." };
     }
 
-    const orcamento = data.salario * 20;
+    const multiplicador = data.salario < 4000 ? 10 : 20;
+    const orcamento = data.salario * multiplicador;
     const lista = data.candidatos
       .map(
         (v, i) =>
@@ -25,7 +26,7 @@ export const gerarRecomendacao = createServerFn({ method: "POST" })
       )
       .join("\n");
 
-    const prompt = `Você é um consultor automotivo. Cliente: ${data.idade} anos, profissão "${data.profissao}", salário mensal R$ ${data.salario.toLocaleString("pt-BR")}, orçamento estimado (20x salário) R$ ${orcamento.toLocaleString("pt-BR")}, prefere categoria ${data.categoria}.
+    const prompt = `Você é um consultor automotivo. Cliente: ${data.idade} anos, profissão "${data.profissao}", salário mensal R$ ${data.salario.toLocaleString("pt-BR")}, orçamento estimado (${multiplicador}x salário) R$ ${orcamento.toLocaleString("pt-BR")}, prefere categoria ${data.categoria}.
 
 Veículos pré-selecionados (sempre comece pelo Custo-Benefício):
 ${lista}

@@ -34,18 +34,14 @@ interface PickOpts {
 }
 
 function pickThree({ vehicles, categoria, salario, orcamentoCliente, pagamento, anoPreferido }: PickOpts): Vehicle[] {
-  // Orçamento total disponível
-  // - Se cliente informou e for à vista: usa esse valor direto
-  // - Se cliente informou e for entrada: assume entrada = ~20% do total (total = entrada × 5)
-  // - Se não informou: usa salário × multiplicador (10x se < 4k, senão 20x)
+  // Base sempre vem do salário × multiplicador (10x se < 4k, 20x caso contrário).
+  // Se o cliente informar um orçamento próprio (à vista ou entrada), ele COMPLEMENTA a base.
   const lowIncome = salario < 4000;
   const multiplier = lowIncome ? 10 : 20;
-  const orcamento =
-    orcamentoCliente && orcamentoCliente > 0
-      ? pagamento === "entrada"
-        ? orcamentoCliente * 5
-        : orcamentoCliente
-      : salario * multiplier;
+  const base = salario * multiplier;
+  const extra = orcamentoCliente && orcamentoCliente > 0 ? orcamentoCliente : 0;
+  const orcamento = base + extra;
+  void pagamento;
 
   const stretch = Math.min(2.2, 1 + salario / 10000);
   const caps = {
@@ -131,10 +127,11 @@ function HomePage() {
 
   const multiplicador = useMemo(() => ((Number(salario) || 0) < 4000 ? 10 : 20), [salario]);
   const orcamentoEstimado = useMemo(() => {
-    const oc = Number(orcamentoCliente);
-    if (oc > 0) return pagamento === "entrada" ? oc * 5 : oc;
-    return (Number(salario) || 0) * multiplicador;
-  }, [salario, multiplicador, orcamentoCliente, pagamento]);
+    const base = (Number(salario) || 0) * multiplicador;
+    const oc = Number(orcamentoCliente) || 0;
+    // Sempre usa salário × multiplicador como base; orçamento informado complementa
+    return base + oc;
+  }, [salario, multiplicador, orcamentoCliente]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -216,8 +213,11 @@ function HomePage() {
               {orcamentoEstimado > 0 && (
                 <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
                   <Wallet className="h-4 w-4 text-primary" />
-                  {Number(orcamentoCliente) > 0 ? "Orçamento informado" : `Orçamento estimado (${multiplicador}× salário)`}
-                  {pagamento === "entrada" && Number(orcamentoCliente) > 0 ? " (entrada × 5)" : ""}:
+                  Orçamento total ({multiplicador}× salário
+                  {Number(orcamentoCliente) > 0
+                    ? ` + ${pagamento === "entrada" ? "entrada" : "à vista"} de ${formatBRL(Number(orcamentoCliente))}`
+                    : ""}
+                  ):
                   <span className="font-semibold text-foreground">{formatBRL(orcamentoEstimado)}</span>
                 </div>
               )}

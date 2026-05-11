@@ -34,18 +34,14 @@ interface PickOpts {
 }
 
 function pickThree({ vehicles, categoria, salario, orcamentoCliente, pagamento, anoPreferido }: PickOpts): Vehicle[] {
-  // Orçamento total disponível
-  // - Se cliente informou e for à vista: usa esse valor direto
-  // - Se cliente informou e for entrada: assume entrada = ~20% do total (total = entrada × 5)
-  // - Se não informou: usa salário × multiplicador (10x se < 4k, senão 20x)
+  // Base sempre vem do salário × multiplicador (10x se < 4k, 20x caso contrário).
+  // Se o cliente informar um orçamento próprio (à vista ou entrada), ele COMPLEMENTA a base.
   const lowIncome = salario < 4000;
   const multiplier = lowIncome ? 10 : 20;
-  const orcamento =
-    orcamentoCliente && orcamentoCliente > 0
-      ? pagamento === "entrada"
-        ? orcamentoCliente * 5
-        : orcamentoCliente
-      : salario * multiplier;
+  const base = salario * multiplier;
+  const extra = orcamentoCliente && orcamentoCliente > 0 ? orcamentoCliente : 0;
+  const orcamento = base + extra;
+  void pagamento;
 
   const stretch = Math.min(2.2, 1 + salario / 10000);
   const caps = {

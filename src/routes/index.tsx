@@ -223,11 +223,13 @@ function HomePage() {
               {orcamentoEstimado > 0 && (
                 <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
                   <Wallet className="h-4 w-4 text-primary" />
-                  Orçamento total ({multiplicador}× salário
-                  {Number(orcamentoCliente) > 0
-                    ? ` + ${pagamento === "entrada" ? "entrada" : "à vista"} de ${formatBRL(Number(orcamentoCliente))}`
-                    : ""}
-                  ):
+                  Orçamento total
+                  {Number(salario) > 0 && Number(orcamentoCliente) > 0
+                    ? ` (${multiplicador}× salário + ${pagamento === "entrada" ? "entrada" : "à vista"} de ${formatBRL(Number(orcamentoCliente))})`
+                    : Number(salario) > 0
+                      ? ` (${multiplicador}× salário)`
+                      : ` (${pagamento === "entrada" ? "entrada" : "à vista"} informada)`}
+                  :
                   <span className="font-semibold text-foreground">{formatBRL(orcamentoEstimado)}</span>
                 </div>
               )}

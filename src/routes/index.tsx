@@ -62,14 +62,33 @@ function pickThree({ vehicles, categoria, salario, orcamentoCliente, pagamento, 
 
   const used = new Set<string>();
 
-  // Custo-Benefício → barato, dos últimos 20 anos, prioriza preço baixo e ano mais recente
+  // Conforto → o MAIS PRÓXIMO do orçamento total (escolhido primeiro)
+  const comfortPool = inCat
+    .filter((v) => v.preco <= caps["Conforto"])
+    .sort((a, b) => Math.abs(a.preco - orcamento) - Math.abs(b.preco - orcamento));
+  const comfort =
+    comfortPool[0] ||
+    [...inCat].sort((a, b) => Math.abs(a.preco - orcamento) - Math.abs(b.preco - orcamento))[0];
+  if (comfort) used.add(comfort.id);
+
+  // Custo-Benefício → mais em conta, mas EVITAR muito barato.
+  // Piso = pelo menos 60% do orçamento (ou metade do preço do conforto).
+  const piso = Math.max(orcamento * 0.6, (comfort?.preco ?? 0) * 0.5);
   const budgetPool = inCat
-    .filter((v) => v.preco <= caps["Custo-Benefício"] && v.ano >= minAnoBudget)
-    .sort((a, b) => a.preco - b.preco || b.ano - a.ano);
+    .filter(
+      (v) =>
+        !used.has(v.id) &&
+        v.ano >= minAnoBudget &&
+        v.preco >= piso &&
+        v.preco <= caps["Custo-Benefício"]
+    )
+    .sort((a, b) => Math.abs(a.preco - orcamento * 0.8) - Math.abs(b.preco - orcamento * 0.8));
   const budget =
     budgetPool[0] ||
-    inCat.filter((v) => v.ano >= minAnoBudget).sort((a, b) => a.preco - b.preco)[0] ||
-    [...inCat].sort((a, b) => a.preco - b.preco)[0];
+    inCat
+      .filter((v) => !used.has(v.id) && v.ano >= minAnoBudget && v.preco <= caps["Custo-Benefício"])
+      .sort((a, b) => b.preco - a.preco)[0] ||
+    inCat.filter((v) => !used.has(v.id)).sort((a, b) => b.preco - a.preco)[0];
   if (budget) used.add(budget.id);
 
   // Top de Linha → mais novo e mais caro respeitando teto
@@ -78,24 +97,13 @@ function pickThree({ vehicles, categoria, salario, orcamentoCliente, pagamento, 
     .sort((a, b) => b.preco - a.preco || b.ano - a.ano);
   const top =
     topPool[0] ||
-    inCat.filter((v) => !used.has(v.id)).sort((a, b) => b.ano - a.ano)[0];
+    inCat.filter((v) => !used.has(v.id)).sort((a, b) => b.preco - a.preco)[0];
   if (top) used.add(top.id);
 
-  // Conforto → meio termo próximo do orçamento
-  const minPreco = Math.min(budget?.preco ?? 0, top?.preco ?? Infinity);
-  const maxPreco = Math.max(budget?.preco ?? 0, top?.preco ?? Infinity);
-  const comfortPool = inCat
-    .filter((v) => !used.has(v.id) && v.preco <= caps["Conforto"] && v.preco >= minPreco && v.preco <= maxPreco)
-    .sort((a, b) => Math.abs(a.preco - orcamento) - Math.abs(b.preco - orcamento));
-  const comfort =
-    comfortPool[0] ||
-    inCat
-      .filter((v) => !used.has(v.id))
-      .sort((a, b) => Math.abs(a.preco - orcamento) - Math.abs(b.preco - orcamento))[0];
-
+  // Ordem de exibição: Conforto → Custo-Benefício → Top de Linha
   const order: { v: Vehicle | undefined; tier: VehicleTier }[] = [
-    { v: budget, tier: "Custo-Benefício" },
     { v: comfort, tier: "Conforto" },
+    { v: budget, tier: "Custo-Benefício" },
     { v: top, tier: "Top de Linha" },
   ];
   return order

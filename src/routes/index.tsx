@@ -113,6 +113,9 @@ function HomePage() {
   const [salario, setSalario] = useState("");
   const [profissao, setProfissao] = useState("");
   const [categoria, setCategoria] = useState<VehicleCategory>("Hatch");
+  const [orcamentoCliente, setOrcamentoCliente] = useState("");
+  const [pagamento, setPagamento] = useState<Pagamento>("avista");
+  const [anoPreferido, setAnoPreferido] = useState("");
   const [resultado, setResultado] = useState<{ candidatos: Vehicle[]; texto: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const recomendar = useServerFn(gerarRecomendacao);
@@ -121,8 +124,17 @@ function HomePage() {
     setVehicles(loadVehicles());
   }, []);
 
+  const anosDisponiveis = useMemo(
+    () => Array.from(new Set(vehicles.map((v) => v.ano))).sort((a, b) => b - a),
+    [vehicles]
+  );
+
   const multiplicador = useMemo(() => ((Number(salario) || 0) < 4000 ? 10 : 20), [salario]);
-  const orcamento = useMemo(() => (Number(salario) || 0) * multiplicador, [salario, multiplicador]);
+  const orcamentoEstimado = useMemo(() => {
+    const oc = Number(orcamentoCliente);
+    if (oc > 0) return pagamento === "entrada" ? oc * 5 : oc;
+    return (Number(salario) || 0) * multiplicador;
+  }, [salario, multiplicador, orcamentoCliente, pagamento]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -131,7 +143,14 @@ function HomePage() {
     if (!id || !sal || !profissao) return;
     setLoading(true);
     setResultado(null);
-    const candidatos = pickThree(vehicles, categoria, sal);
+    const candidatos = pickThree({
+      vehicles,
+      categoria,
+      salario: sal,
+      orcamentoCliente: Number(orcamentoCliente) || undefined,
+      pagamento,
+      anoPreferido: anoPreferido ? Number(anoPreferido) : undefined,
+    });
     try {
       const r = await recomendar({
         data: { idade: id, salario: sal, profissao, categoria, candidatos },

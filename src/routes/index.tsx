@@ -22,30 +22,51 @@ export const Route = createFileRoute("/")({
 
 const TIERS: VehicleTier[] = ["Custo-Benefício", "Conforto", "Top de Linha"];
 
-function pickThree(vehicles: Vehicle[], categoria: VehicleCategory, salario: number): Vehicle[] {
+type Pagamento = "avista" | "entrada";
+
+interface PickOpts {
+  vehicles: Vehicle[];
+  categoria: VehicleCategory;
+  salario: number;
+  orcamentoCliente?: number; // opcional — quanto o cliente tem
+  pagamento: Pagamento;
+  anoPreferido?: number; // opcional
+}
+
+function pickThree({ vehicles, categoria, salario, orcamentoCliente, pagamento, anoPreferido }: PickOpts): Vehicle[] {
+  // Orçamento total disponível
+  // - Se cliente informou e for à vista: usa esse valor direto
+  // - Se cliente informou e for entrada: assume entrada = ~20% do total (total = entrada × 5)
+  // - Se não informou: usa salário × multiplicador (10x se < 4k, senão 20x)
   const lowIncome = salario < 4000;
   const multiplier = lowIncome ? 10 : 20;
-  const orcamento = salario * multiplier;
+  const orcamento =
+    orcamentoCliente && orcamentoCliente > 0
+      ? pagamento === "entrada"
+        ? orcamentoCliente * 5
+        : orcamentoCliente
+      : salario * multiplier;
 
-  // Quanto maior o salário, mais "esticamos" o teto do top de linha
-  const stretch = Math.min(2.2, 1 + salario / 10000); // 1.0 a 2.2
-
+  const stretch = Math.min(2.2, 1 + salario / 10000);
   const caps = {
     "Custo-Benefício": orcamento * (lowIncome ? 0.75 : 0.85),
     Conforto: orcamento * (lowIncome ? 1.0 : 1.15),
     "Top de Linha": orcamento * (lowIncome ? 1.1 : stretch),
   };
 
-  // Não considerar "muito antigo" no custo-benefício (últimos ~6 anos)
   const anoAtual = new Date().getFullYear();
-  const minAnoBudget = anoAtual - 6;
+  const minAnoBudget = anoAtual - 20; // últimos 20 anos para custo-benefício
 
-  const inCat = vehicles.filter((v) => v.categoria === categoria);
+  let inCat = vehicles.filter((v) => v.categoria === categoria);
+  if (anoPreferido) {
+    const filtrados = inCat.filter((v) => v.ano === anoPreferido);
+    if (filtrados.length > 0) inCat = filtrados;
+  }
   if (inCat.length === 0) return [];
 
   const used = new Set<string>();
 
-  // Custo-Benefício → barato mas não muito antigo
+  // Custo-Benefício → barato, dos últimos 20 anos, prioriza preço baixo e ano mais recente
   const budgetPool = inCat
     .filter((v) => v.preco <= caps["Custo-Benefício"] && v.ano >= minAnoBudget)
     .sort((a, b) => a.preco - b.preco || b.ano - a.ano);
@@ -55,7 +76,7 @@ function pickThree(vehicles: Vehicle[], categoria: VehicleCategory, salario: num
     [...inCat].sort((a, b) => a.preco - b.preco)[0];
   if (budget) used.add(budget.id);
 
-  // Top de Linha → mais novo e mais caro (quanto maior o salário, maior o teto)
+  // Top de Linha → mais novo e mais caro respeitando teto
   const topPool = inCat
     .filter((v) => !used.has(v.id) && v.preco <= caps["Top de Linha"])
     .sort((a, b) => b.preco - a.preco || b.ano - a.ano);
@@ -64,7 +85,7 @@ function pickThree(vehicles: Vehicle[], categoria: VehicleCategory, salario: num
     inCat.filter((v) => !used.has(v.id)).sort((a, b) => b.ano - a.ano)[0];
   if (top) used.add(top.id);
 
-  // Conforto → meio termo, próximo do orçamento
+  // Conforto → meio termo próximo do orçamento
   const minPreco = Math.min(budget?.preco ?? 0, top?.preco ?? Infinity);
   const maxPreco = Math.max(budget?.preco ?? 0, top?.preco ?? Infinity);
   const comfortPool = inCat

@@ -28,10 +28,10 @@ export const gerarRecomendacao = createServerFn({ method: "POST" })
 
     const prompt = `Você é um consultor automotivo. Cliente: ${data.idade} anos, profissão "${data.profissao}", salário mensal R$ ${data.salario.toLocaleString("pt-BR")}, orçamento estimado (${multiplicador}x salário) R$ ${orcamento.toLocaleString("pt-BR")}, prefere categoria ${data.categoria}.
 
-Veículos pré-selecionados (sempre comece pelo Custo-Benefício):
+Veículos pré-selecionados (apresente nesta ordem):
 ${lista}
 
-Escreva uma recomendação curta (até 180 palavras), em português, justificando cada um dos 3 veículos para este perfil, na ordem: Custo-Benefício, Conforto, Top de Linha. Tom amigável e objetivo. Use markdown leve com **negrito** nos modelos.`;
+Escreva uma recomendação curta (até 180 palavras), em português, justificando cada um dos 3 veículos para este perfil, na ordem: Conforto, Custo-Benefício, Top de Linha. Tom amigável e objetivo. Use markdown leve com **negrito** nos modelos.`;
 
     try {
       const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {

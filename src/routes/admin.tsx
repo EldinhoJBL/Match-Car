@@ -20,22 +20,23 @@ export const Route = createFileRoute("/admin")({
 const AUTH_KEY = "concessionaria_auth_v1";
 
 function AdminPage() {
-  const [authed, setAuthed] = useState(false);
+  const [authed, setAuthed] = useState<boolean | null>(null);
   useEffect(() => {
-    setAuthed(typeof window !== "undefined" && sessionStorage.getItem(AUTH_KEY) === "1");
+    setAuthed(typeof window !== "undefined" && localStorage.getItem(AUTH_KEY) === "1");
   }, []);
+  if (authed === null) return <div className="min-h-screen"><SiteNav /></div>;
   if (!authed) return <LoginScreen onOk={() => setAuthed(true)} />;
-  return <AdminPanel onLogout={() => { sessionStorage.removeItem(AUTH_KEY); setAuthed(false); }} />;
+  return <AdminPanel onLogout={() => { localStorage.removeItem(AUTH_KEY); setAuthed(false); }} />;
 }
 
 function LoginScreen({ onOk }: { onOk: () => void }) {
   const [u, setU] = useState("");
   const [p, setP] = useState("");
   const [err, setErr] = useState("");
-  function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (u === "admin" && p === "admin123") {
-      sessionStorage.setItem(AUTH_KEY, "1");
+  function tryLogin() {
+    if (u.trim() === "admin" && p === "admin123") {
+      localStorage.setItem(AUTH_KEY, "1");
+      setErr("");
       onOk();
     } else {
       setErr("Usuário ou senha inválidos.");
@@ -48,11 +49,12 @@ function LoginScreen({ onOk }: { onOk: () => void }) {
         <Card>
           <CardHeader><CardTitle className="flex items-center gap-2"><Lock className="h-5 w-5" />Acesso do Logista</CardTitle></CardHeader>
           <CardContent>
-            <form onSubmit={submit} className="space-y-4">
+            <form onSubmit={(e) => { e.preventDefault(); tryLogin(); }} className="space-y-4">
               <div><Label htmlFor="u">Usuário</Label><Input id="u" value={u} onChange={(e) => setU(e.target.value)} autoComplete="username" /></div>
-              <div><Label htmlFor="p">Senha</Label><Input id="p" type="password" value={p} onChange={(e) => setP(e.target.value)} autoComplete="current-password" /></div>
+              <div><Label htmlFor="p">Senha</Label><Input id="p" type="password" value={p} onChange={(e) => setP(e.target.value)} autoComplete="current-password" onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); tryLogin(); } }} /></div>
               {err && <p className="text-sm text-destructive">{err}</p>}
-              <Button type="submit" className="w-full">Entrar</Button>
+              <Button type="button" className="w-full" onClick={tryLogin}>Entrar</Button>
+
             </form>
           </CardContent>
         </Card>

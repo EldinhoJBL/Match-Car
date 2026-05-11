@@ -175,7 +175,7 @@ function HomePage() {
 
               {orcamento > 0 && (
                 <div className="text-sm text-muted-foreground flex items-center gap-2">
-                  <Wallet className="h-4 w-4 text-primary" /> Orçamento estimado (20× salário):
+                  <Wallet className="h-4 w-4 text-primary" /> Orçamento estimado ({multiplicador}× salário):
                   <span className="font-semibold text-foreground">{formatBRL(orcamento)}</span>
                 </div>
               )}

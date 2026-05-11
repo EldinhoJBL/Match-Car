@@ -13,9 +13,11 @@ export interface Vehicle {
   descricao: string;
 }
 
-const STORAGE_KEY = "concessionaria_vehicles_v1";
+import { SEED_DATA } from "./vehicles-seed";
 
-export const SEED_VEHICLES: Vehicle[] = [
+const STORAGE_KEY = "concessionaria_vehicles_v2";
+
+export const SEED_VEHICLES: Vehicle[] = SEED_DATA;
   // Hatch
   { id: "h1", marca: "Fiat", modelo: "Mobi Like", ano: 2023, categoria: "Hatch", preco: 62000, tier: "Custo-Benefício", imagem: "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=900", descricao: "Compacto econômico, ideal para a cidade." },
   { id: "h2", marca: "Volkswagen", modelo: "Polo Highline", ano: 2024, categoria: "Hatch", preco: 105000, tier: "Conforto", imagem: "https://images.unsplash.com/photo-1616422285623-13ff0162193c?w=900", descricao: "Acabamento refinado e tecnologia embarcada." },

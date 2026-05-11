@@ -22,40 +22,58 @@ export const Route = createFileRoute("/")({
 
 const TIERS: VehicleTier[] = ["Custo-Benefício", "Conforto", "Top de Linha"];
 
-function pickThree(vehicles: Vehicle[], categoria: VehicleCategory, orcamento: number): Vehicle[] {
+function pickThree(vehicles: Vehicle[], categoria: VehicleCategory, salario: number): Vehicle[] {
+  const orcamento = salario * 20;
+  const lowIncome = salario < 4000;
+
+  // Tetos por tier (mais conservadores para renda baixa)
+  const caps = lowIncome
+    ? { "Custo-Benefício": orcamento * 0.7, Conforto: orcamento * 1.0, "Top de Linha": orcamento * 1.2 }
+    : { "Custo-Benefício": orcamento * 0.8, Conforto: orcamento * 1.15, "Top de Linha": orcamento * 1.6 };
+
   const inCat = vehicles.filter((v) => v.categoria === categoria);
+  if (inCat.length === 0) return [];
+
+  // Ordena por preço dentro da categoria para particionar em "velho/barato", "médio", "novo/caro"
   const used = new Set<string>();
-  const picks: Vehicle[] = [];
 
-  for (const tier of TIERS) {
-    // 1) tier+categoria, dentro do orçamento, mais caro possível (melhor uso)
-    let pool = inCat.filter((v) => v.tier === tier && !used.has(v.id));
-    let pick =
-      pool.filter((v) => v.preco <= orcamento * (tier === "Top de Linha" ? 1.5 : tier === "Conforto" ? 1.2 : 1)).sort((a, b) => b.preco - a.preco)[0] ||
-      pool.sort((a, b) => a.preco - b.preco)[0];
+  // Custo-Benefício → mais antigo e mais em conta (prioriza preço baixo, depois ano antigo)
+  const budgetPool = inCat
+    .filter((v) => v.preco <= caps["Custo-Benefício"])
+    .sort((a, b) => a.preco - b.preco || a.ano - b.ano);
+  const budget = (budgetPool[0] || [...inCat].sort((a, b) => a.preco - b.preco)[0]);
+  if (budget) used.add(budget.id);
 
-    // 2) fallback: qualquer veículo daquele tier (outras categorias)
-    if (!pick) {
-      const anyTier = vehicles.filter((v) => v.tier === tier && !used.has(v.id));
-      pick = anyTier.sort((a, b) => Math.abs(a.preco - orcamento) - Math.abs(b.preco - orcamento))[0];
-    }
+  // Top de Linha → mais novo (e premium), respeitando teto
+  const topPool = inCat
+    .filter((v) => !used.has(v.id) && v.preco <= caps["Top de Linha"])
+    .sort((a, b) => b.ano - a.ano || b.preco - a.preco);
+  const top =
+    topPool[0] ||
+    inCat.filter((v) => !used.has(v.id)).sort((a, b) => b.ano - a.ano)[0];
+  if (top) used.add(top.id);
 
-    // 3) fallback: qualquer veículo da categoria não usado
-    if (!pick) {
-      pick = inCat.filter((v) => !used.has(v.id)).sort((a, b) => a.preco - b.preco)[0];
-    }
+  // Conforto → meio termo (preço/ano entre os dois, próximo do orçamento)
+  const minPreco = budget ? Math.min(budget.preco, top?.preco ?? Infinity) : 0;
+  const maxPreco = top ? Math.max(top.preco, budget?.preco ?? 0) : Infinity;
+  const comfortPool = inCat
+    .filter((v) => !used.has(v.id) && v.preco <= caps["Conforto"] && v.preco >= minPreco && v.preco <= maxPreco)
+    .sort((a, b) => Math.abs(a.preco - orcamento) - Math.abs(b.preco - orcamento));
+  const comfort =
+    comfortPool[0] ||
+    inCat
+      .filter((v) => !used.has(v.id))
+      .sort((a, b) => Math.abs(a.preco - orcamento) - Math.abs(b.preco - orcamento))[0];
 
-    // 4) fallback final: qualquer veículo
-    if (!pick) {
-      pick = vehicles.filter((v) => !used.has(v.id))[0];
-    }
-
-    if (pick) {
-      used.add(pick.id);
-      picks.push(pick);
-    }
-  }
-  return picks;
+  // Reatribui tiers conforme escolha (sempre na ordem Custo-Benefício, Conforto, Top de Linha)
+  const order: { v: Vehicle | undefined; tier: VehicleTier }[] = [
+    { v: budget, tier: "Custo-Benefício" },
+    { v: comfort, tier: "Conforto" },
+    { v: top, tier: "Top de Linha" },
+  ];
+  return order
+    .filter((o) => o.v)
+    .map((o) => ({ ...(o.v as Vehicle), tier: o.tier }));
 }
 
 function HomePage() {
@@ -81,7 +99,7 @@ function HomePage() {
     if (!id || !sal || !profissao) return;
     setLoading(true);
     setResultado(null);
-    const candidatos = pickThree(vehicles, categoria, sal * 20);
+    const candidatos = pickThree(vehicles, categoria, sal);
     try {
       const r = await recomendar({
         data: { idade: id, salario: sal, profissao, categoria, candidatos },

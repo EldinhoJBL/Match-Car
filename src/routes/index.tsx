@@ -100,7 +100,8 @@ function HomePage() {
     setVehicles(loadVehicles());
   }, []);
 
-  const orcamento = useMemo(() => (Number(salario) || 0) * 20, [salario]);
+  const multiplicador = useMemo(() => ((Number(salario) || 0) < 4000 ? 10 : 20), [salario]);
+  const orcamento = useMemo(() => (Number(salario) || 0) * multiplicador, [salario, multiplicador]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();

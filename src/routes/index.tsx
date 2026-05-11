@@ -145,7 +145,9 @@ function HomePage() {
     e.preventDefault();
     const sal = Number(salario);
     const id = Number(idade);
-    if (!id || !sal || !profissao) return;
+    const oc = Number(orcamentoCliente) || 0;
+    if (!id || !profissao) return;
+    if (!sal && !oc) return; // precisa de pelo menos renda OU orçamento
     setLoading(true);
     setResultado(null);
     const candidatos = pickThree({

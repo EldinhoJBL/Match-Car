@@ -212,8 +212,8 @@ function HomePage() {
                 <Field label="Idade" icon={<User className="h-4 w-4" />}>
                   <Input type="number" min={16} value={idade} onChange={(e) => setIdade(e.target.value)} required placeholder="Ex: 35" />
                 </Field>
-                <Field label="Renda Mensal" icon={<DollarSign className="h-4 w-4" />}>
-                  <Input type="number" min={0} value={salario} onChange={(e) => setSalario(e.target.value)} required placeholder="Ex: R$ 5.000" />
+                <Field label="Renda Mensal (opcional)" icon={<DollarSign className="h-4 w-4" />}>
+                  <Input type="number" min={0} value={salario} onChange={(e) => setSalario(e.target.value)} placeholder="Ex: R$ 5.000" />
                 </Field>
                 <Field label="Profissão" icon={<Briefcase className="h-4 w-4" />}>
                   <Input value={profissao} onChange={(e) => setProfissao(e.target.value)} required placeholder="Ex: Engenheiro, Médico, Autônomo..." />

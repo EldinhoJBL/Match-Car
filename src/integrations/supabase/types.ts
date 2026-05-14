@@ -14,16 +14,204 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      leads: {
+        Row: {
+          ano_preferido: number | null
+          created_at: string
+          id: string
+          idade: number | null
+          orcamento_cliente: number | null
+          pagamento: string | null
+          profissao: string | null
+          salario: number | null
+        }
+        Insert: {
+          ano_preferido?: number | null
+          created_at?: string
+          id?: string
+          idade?: number | null
+          orcamento_cliente?: number | null
+          pagamento?: string | null
+          profissao?: string | null
+          salario?: number | null
+        }
+        Update: {
+          ano_preferido?: number | null
+          created_at?: string
+          id?: string
+          idade?: number | null
+          orcamento_cliente?: number | null
+          pagamento?: string | null
+          profissao?: string | null
+          salario?: number | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      recommendations: {
+        Row: {
+          ano: number | null
+          created_at: string
+          id: string
+          lead_id: string
+          marca: string | null
+          modelo: string | null
+          motivo: string | null
+          posicao: number
+          preco: number | null
+          tier: string
+          vehicle_id: string | null
+        }
+        Insert: {
+          ano?: number | null
+          created_at?: string
+          id?: string
+          lead_id: string
+          marca?: string | null
+          modelo?: string | null
+          motivo?: string | null
+          posicao: number
+          preco?: number | null
+          tier: string
+          vehicle_id?: string | null
+        }
+        Update: {
+          ano?: number | null
+          created_at?: string
+          id?: string
+          lead_id?: string
+          marca?: string | null
+          modelo?: string | null
+          motivo?: string | null
+          posicao?: number
+          preco?: number | null
+          tier?: string
+          vehicle_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recommendations_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recommendations_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      vehicles: {
+        Row: {
+          ano: number
+          categoria: string
+          created_at: string
+          descricao: string | null
+          em_estoque: boolean
+          id: string
+          imagem: string | null
+          marca: string
+          modelo: string
+          preco: number
+          tier: string
+          updated_at: string
+        }
+        Insert: {
+          ano: number
+          categoria: string
+          created_at?: string
+          descricao?: string | null
+          em_estoque?: boolean
+          id?: string
+          imagem?: string | null
+          marca: string
+          modelo: string
+          preco: number
+          tier: string
+          updated_at?: string
+        }
+        Update: {
+          ano?: number
+          categoria?: string
+          created_at?: string
+          descricao?: string | null
+          em_estoque?: boolean
+          id?: string
+          imagem?: string | null
+          marca?: string
+          modelo?: string
+          preco?: number
+          tier?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +338,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const

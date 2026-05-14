@@ -14,8 +14,8 @@ export const Route = createFileRoute("/")({
   component: HomePage,
   head: () => ({
     meta: [
-      { title: "Wyllkens Wcar — Consultoria Automotiva em Castanhal" },
-      { name: "description", content: "Encontre o veículo perfeito para o seu perfil com nossa consultoria automotiva premium em Castanhal." },
+      { title: "MatchCar — Consultoria Automotiva em Castanhal" },
+      { name: "description", content: "Encontre o veículo perfeito para o seu perfil com a MatchCar — consultoria automotiva premium em Castanhal." },
     ],
   }),
 });
@@ -204,7 +204,7 @@ function HomePage() {
                   <User className="h-5 w-5 text-primary" /> Dados do Cliente
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Informe seus dados para uma análise personalizada com a Wyllkens Wcar
+                  Informe seus dados para uma análise personalizada com a MatchCar
                 </p>
               </div>
 
@@ -357,7 +357,7 @@ function HomePage() {
       <footer className="border-t border-border mt-12">
         <div className="container mx-auto px-4 py-6 flex flex-col md:flex-row items-center justify-between gap-3 text-sm">
           <div className="flex items-center gap-3">
-            <span className="font-bold">Wyllkens Wcar</span>
+            <span className="font-bold">MatchCar</span>
             <span className="text-muted-foreground">|</span>
             <span className="text-muted-foreground">Compra · Venda · Troca · Financia</span>
           </div>

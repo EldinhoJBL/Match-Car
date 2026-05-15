@@ -77,42 +77,17 @@ function LoginPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="login">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">Entrar</TabsTrigger>
-                <TabsTrigger value="signup">Criar conta</TabsTrigger>
-              </TabsList>
-              <TabsContent value="login">
-                <form onSubmit={onLogin} className="space-y-4 pt-4">
-                  <div>
-                    <Label htmlFor="email">E-mail</Label>
-                    <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
-                  </div>
-                  <div>
-                    <Label htmlFor="password">Senha</Label>
-                    <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={loading}>{loading ? "Entrando…" : "Entrar"}</Button>
-                </form>
-              </TabsContent>
-              <TabsContent value="signup">
-                <form onSubmit={onSignup} className="space-y-4 pt-4">
-                  <div>
-                    <Label htmlFor="sname">Nome</Label>
-                    <Input id="sname" required value={sName} onChange={(e) => setSName(e.target.value)} />
-                  </div>
-                  <div>
-                    <Label htmlFor="semail">E-mail</Label>
-                    <Input id="semail" type="email" required value={sEmail} onChange={(e) => setSEmail(e.target.value)} autoComplete="email" />
-                  </div>
-                  <div>
-                    <Label htmlFor="spassword">Senha</Label>
-                    <Input id="spassword" type="password" required minLength={6} value={sPassword} onChange={(e) => setSPassword(e.target.value)} autoComplete="new-password" />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={loading}>{loading ? "Criando…" : "Criar conta"}</Button>
-                </form>
-              </TabsContent>
-            </Tabs>
+            <form onSubmit={onLogin} className="space-y-4">
+              <div>
+                <Label htmlFor="email">E-mail</Label>
+                <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
+              </div>
+              <div>
+                <Label htmlFor="password">Senha</Label>
+                <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>{loading ? "Entrando…" : "Entrar"}</Button>
+            </form>
             <p className="text-xs text-muted-foreground text-center mt-6">
               <Link to="/" className="hover:text-primary">← Voltar para o site</Link>
             </p>

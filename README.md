@@ -7,8 +7,7 @@ O **MatchCar** é um ecossistema de recomendação inteligente desenvolvido espe
 
 ---
 
-## 🔗 [match-car
-.lovable.app](Em desenvolvimento)
+## 🔗 [match-car.lovable.app](Em desenvolvimento)
 
 ---
 

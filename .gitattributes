@@ -1,3 +1,0 @@
-*.lock linguist-vendored
-.lovable/** linguist-vendored
-src/components/ui/** linguist-vendored

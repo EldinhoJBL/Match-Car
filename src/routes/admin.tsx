@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { SiteNav } from "@/components/SiteNav";
 import { Button } from "@/components/ui/button";
@@ -9,58 +9,63 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { loadVehicles, saveVehicles, formatBRL, type Vehicle, type VehicleCategory, type VehicleTier } from "@/lib/vehicles";
-import { Pencil, Trash2, Plus, LogOut, Lock } from "lucide-react";
+import { Pencil, Trash2, Plus, LogOut, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
-  head: () => ({ meta: [{ title: "Área do Logista — AutoMatch" }] }),
+  head: () => ({ meta: [{ title: "Área do Lojista — MatchCar" }] }),
 });
 
-const AUTH_KEY = "concessionaria_auth_v1";
-
 function AdminPage() {
-  const [authed, setAuthed] = useState<boolean | null>(null);
+  const { user, isAdmin, loading } = useAuth();
+  const navigate = useNavigate();
+
   useEffect(() => {
-    setAuthed(typeof window !== "undefined" && localStorage.getItem(AUTH_KEY) === "1");
-  }, []);
-  if (authed === null) return <div className="min-h-screen"><SiteNav /></div>;
-  if (!authed) return <LoginScreen onOk={() => setAuthed(true)} />;
-  return <AdminPanel onLogout={() => { localStorage.removeItem(AUTH_KEY); setAuthed(false); }} />;
-}
+    if (!loading && !user) navigate({ to: "/login" });
+  }, [loading, user, navigate]);
 
-function LoginScreen({ onOk }: { onOk: () => void }) {
-  const [u, setU] = useState("");
-  const [p, setP] = useState("");
-  const [err, setErr] = useState("");
-  function tryLogin() {
-    if (u.trim() === "admin" && p === "admin123") {
-      localStorage.setItem(AUTH_KEY, "1");
-      setErr("");
-      onOk();
-    } else {
-      setErr("Usuário ou senha inválidos.");
-    }
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    navigate({ to: "/login" });
   }
-  return (
-    <div className="min-h-screen">
-      <SiteNav />
-      <div className="container mx-auto px-4 py-20 max-w-md">
-        <Card>
-          <CardHeader><CardTitle className="flex items-center gap-2"><Lock className="h-5 w-5" />Acesso do Logista</CardTitle></CardHeader>
-          <CardContent>
-            <form onSubmit={(e) => { e.preventDefault(); tryLogin(); }} className="space-y-4">
-              <div><Label htmlFor="u">Usuário</Label><Input id="u" value={u} onChange={(e) => setU(e.target.value)} autoComplete="username" /></div>
-              <div><Label htmlFor="p">Senha</Label><Input id="p" type="password" value={p} onChange={(e) => setP(e.target.value)} autoComplete="current-password" onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); tryLogin(); } }} /></div>
-              {err && <p className="text-sm text-destructive">{err}</p>}
-              <Button type="button" className="w-full" onClick={tryLogin}>Entrar</Button>
 
-            </form>
-          </CardContent>
-        </Card>
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen">
+        <SiteNav />
+        <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">Carregando…</div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen">
+        <SiteNav />
+        <div className="container mx-auto px-4 py-20 max-w-md">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><ShieldAlert className="h-5 w-5 text-destructive" /> Acesso restrito</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Sua conta ({user.email}) ainda não tem permissão de administrador. Solicite a liberação ao responsável.
+              </p>
+              <div className="flex gap-2">
+                <Button variant="outline" asChild><Link to="/">Voltar</Link></Button>
+                <Button onClick={handleLogout}><LogOut className="h-4 w-4 mr-2" />Sair</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  return <AdminPanel onLogout={handleLogout} />;
 }
 
 const CATEGORIAS: VehicleCategory[] = ["Hatch", "Sedan", "Pickup"];

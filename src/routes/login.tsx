@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { supabase } from "@/integrations/supabase/client";
 import { Lock } from "lucide-react";
 import { toast } from "sonner";
@@ -23,10 +23,6 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // signup state
-  const [sName, setSName] = useState("");
-  const [sEmail, setSEmail] = useState("");
-  const [sPassword, setSPassword] = useState("");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -47,24 +43,6 @@ function LoginPage() {
     navigate({ to: "/admin" });
   }
 
-  async function onSignup(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email: sEmail,
-      password: sPassword,
-      options: {
-        emailRedirectTo: `${window.location.origin}/admin`,
-        data: { display_name: sName },
-      },
-    });
-    setLoading(false);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    toast.success("Conta criada! Verifique seu e-mail para confirmar.");
-  }
 
   return (
     <div className="min-h-screen">

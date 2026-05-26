@@ -1,42 +1,75 @@
-# 🚗 MatchCar: Inteligência Analítica para Seminovos
-## DealerData Castanhal — Wcar Veículos
+# 🚗 MatchCar: Inteligência Analítica para o Setor Automotivo
+> **Grupo DealerData** — Projeto de Extensão Universitária | Castanhal/PA
 
-![Status do Projeto](https://img.shields.io/badge/Status-Em_Andamento-blue?style=flat-square)
-[![Acessar Aplicação](https://img.shields.io/badge/Acessar_Aplicação-match--car.lovable.app-0052FF?style=flat-square&logo=vercel&logoColor=white)](https://match-car.lovable.app)
+![Status do Projeto](https://img.shields.io/badge/Status-Conclu%C3%ADdo-brightgreen?style=flat-square)
+[![Acessar Aplicação](https://img.shields.io/badge/Acessar_Aplica%C3%A7%C3%A3o-match--car.lovable.app-0052FF?style=flat-square&logo=react&logoColor=white)](https://match-car.lovable.app)
 
-O **MatchCar** é um ecossistema de recomendação inteligente desenvolvido especificamente para a **Wcar Veículos** (Castanhal/PA). O sistema utiliza arquitetura de Big Data e Inteligência Artificial para conectar o perfil socioeconômico do cliente ao veículo ideal em estoque, otimizando a conversão de vendas e acelerando o giro de pátio.
+O **MatchCar** é um ecossistema de recomendação inteligente desenvolvido especificamente para o mercado de seminovos de Castanhal/PA. O sistema utiliza uma arquitetura híbrida que combina **Engenharia de Big Data**, **Machine Learning** e **Inteligência Artificial Generativa** para conectar o perfil socioeconômico e as preferências do cliente ao veículo ideal em estoque, otimizando a conversão de vendas e acelerando o giro de pátio.
+
+---
+
+## 🔗 Links do Projeto
+
+* 🚀 **Sistema Online:** [match-car.lovable.app](https://match-car.lovable.app)
+* 💾 **Repositório Backend Engine:** [GitHub - car-advisor-pro](https://github.com/EldinhoJBL/car-advisor-pro.git)
+
+---
+
+## 📸 Demonstração do Sistema
+
+| Homepage (Formulário de Perfil do Cliente) | Painel Administrativo (Controle do Lojista) |
+| :---: | :---: |
+| <img src="./public/screenshot-client.png" width="100%" alt="Interface do Cliente Final"> | <img src="./public/screenshot-admin.png" width="100%" alt="Painel Admin do Lojista"> |
+| *Interface de captura do cliente final* | *Painel privado de gestão do lojista* |
+
+---
+
+## 💼 Objetivos e Valor de Negócio
+
+* **Qualificação de Leads:** Automação da captura e análise do perfil financeiro do cliente para entregar ao consultor de vendas um lead com alto potencial de fechamento.
+* **Otimização de Estoque:** Algoritmo que acelera o giro do pátio ao priorizar inteligentemente os veículos físicos da loja.
+* **Redução de Atrito:** Interface pública projetada para o cliente final obter respostas imediatas sem a necessidade de cadastros prévios, aumentando o volume de conversão.
 
 ---
 
 ## ✨ Funcionalidades Principais
 
-* **Recomendação Preditiva:** Algoritmo de Machine Learning que identifica a melhor opção de seminovo com base no perfil do comprador (Renda, Profissão, Idade).
-* **🎯 Lógica de Prioridade de Estoque:** Algoritmo inteligente que prioriza veículos do estoque físico real (Manual) da Wcar Veículos antes de exibir sugestões genéricas do sistema.
-* **Justificativa por IA:** Argumentos de venda e *pitches* comerciais altamente personalizados gerados pelo Gemini AI para auxiliar os consultores.
-* **Gestão de Estoque Real-time:** Dashboard administrativo restrito para controle total de ativos e monitoramento de leads.
-* **Interface Cliente Fluida:** Interface otimizada para captura de dados e conversão via WhatsApp.
+* **Modelagem Preditiva de Categoria:** Motor de Machine Learning baseado no algoritmo **Random Forest Classifier** que analisa variáveis socioeconômicas (Idade, Profissão, Salário) para predizer a categoria ideal de veículo (Hatch, Sedan ou Pickup).
+* **Algoritmo de Priorização de Estoque:** Lógica customizada que varre o estoque e aplica pesos matemáticos para garantir que veículos de origem manual (pátio físico da loja) tenham prioridade máxima de exibição.
+* **Filtro de Viabilidade Financeira:** Aplicação rígida da regra de negócio do **Teto de Compra Fixo**, limitando as buscas à capacidade financeira real do lead:
+  $$\text{Teto Total} = (\text{Salário Mensal} \times 20) + \text{Orçamento Informado}$$
+* **Recomendação Estratégica em Dois Tiers:** O sistema seleciona e apresenta simultaneamente duas opções ideais dentro do teto calculado:
+  * **Custo-Benefício:** O veículo em estoque mais próximo de 70% do teto financeiro total.
+  * **Conforto:** A melhor opção de veículo que atinge o limite máximo do orçamento disponível.
+* **Análise de Realismo e Validação de Mercado:** Cruzamento de dados em tempo real com o histórico de preços de mercado (`market_prices`), calibrando o prompt enviado ao **Gemini 2.5 Flash** para garantir argumentos comerciais realistas e alinhados à tabela FIPE.
 
-## 🛠️ Stack Tecnológica
+---
 
-O projeto utiliza uma arquitetura híbrida para garantir escalabilidade e performance:
+## 🛠️ Arquitetura Tecnológica e Stack
 
-* **Machine Learning & Inteligência Artificial:** `scikit-learn` (Modelo Random Forest Classifier para predição de categoria) e Google Gemini AI `gemini-1.5-flash` (Geração de argumentos de vendas).
-* **Backend & API Engine:** Python, Flask e `pyngrok` (Criação da API e tunelamento para acesso externo).
-* **Big Data & Dados:** Python, Apache Spark & Pandas (Processamento massivo e inteligência de dados).
-* **Frontend & Interface:** React, TypeScript e Tailwind CSS (Desenvolvido via Lovable.dev).
-* **Backend de Persistência:** Supabase (Base de dados PostgreSQL e Autenticação).
-* **Infraestrutura:** Lovable (Hospedagem de alta performance).
-* **Prototipagem:** Google Colab.
+O projeto utiliza uma arquitetura distribuída e de alta performance, dividida em camadas especializadas:
 
-## 🧠 Arquitetura DealerData
+### 1. Data Engine & Machine Learning (Backend)
 
-Diferente de filtros de pesquisa convencionais, o MatchCar opera numa camada de inteligência analítica:
-1. **Ingestão:** Os dados do lead (idade, renda, profissão) são capturados via interface React no Lovable.
-2. **Processamento da Engine (API):** A API Flask recebe os dados e utiliza o modelo **Random Forest** (pré-treinado e normalizado com `StandardScaler` e `TfidfVectorizer`) para prever com precisão a categoria ideal de carro.
-3. **Filtro de Prioridade:** O sistema varre o estoque e calcula pesos matemáticos para garantir que modelos de **Origem Manual** (pátio físico da loja) tenham prioridade máxima de exibição.
-4. **Inferência Adaptativa:** O motor se conecta à API do Gemini AI para gerar um texto de vendas customizado para o perfil do cliente. O sistema possui resiliência com tratamento de erros (`try/except`) para garantir estabilidade caso a IA fique fora do ar.
-5. **Entrega:** O lojista recebe um lead qualificado na tela com o veículo ideal e a sugestão de abordagem pronta para o fechamento via WhatsApp.
+* **Python 3:** Linguagem central utilizada para engenharia de dados, modelagem matemática e integrações de IA.
+* **Apache Spark & Pandas:** Ferramentas aplicadas no processamento massivo, limpeza e manipulação da base de dados de preços de mercado (`market_prices`).
+* **Scikit-Learn:** Pipeline de dados composto por `StandardScaler` (normalização), `TfidfVectorizer` (processamento de texto para o campo de profissões) e o classificador `Random Forest`.
+* **Flask & Pyngrok:** Micro-framework responsável por expor o endpoint seguro `/api/recomendar`, utilizando tunelamento para comunicação externa com o frontend.
+* **Google Gemini 2.5 Flash:** Integração via **Lovable AI Gateway** para a inteligência analítica de vendas e geração de descrições automáticas de catálogo.
 
+### 2. Interface e Aplicação (Frontend)
+
+* **React 19 & TypeScript:** Interface robusta, tipada e performática desenvolvida com o auxílio da plataforma Lovable.dev.
+* **TanStack Router:** Gerenciamento de rotas baseado em arquivos do sistema (`/`, `/login`, `/admin`).
+* **TanStack Query:** Controle de estado global, cache assíncrono de dados e manipulação de estados de carregamento.
+
+### 3. Persistência & Segurança (BaaS)
+
+* **Supabase Postgres:** Banco de dados relacional responsável por armazenar as tabelas estruturadas do ecossistema.
+* **Supabase Auth & RLS:** Sistema de autenticação seguro via e-mail e senha, com políticas estritas de *Row Level Security* (Segurança em Nível de Linha).
+* **Supabase Storage:** Armazenamento binário estruturado no bucket `vehicle-images` para gerenciamento das fotos do catálogo.
+
+---
 ## 📁 Estrutura do Repositório
 
 ```text
@@ -95,8 +128,12 @@ Abra o arquivo da API localizado na pasta `/engine` dentro do seu ambiente Pytho
 
 Conheça os membros responsáveis pela engenharia e arquitetura do ecossistema:
 
-* 🧑‍💻 **Elder Gomes**
-* 🧑‍💻 **Erlan Moura**
-* 🧑‍💻 **Halysson Silva**
-* 🧑‍💻 **Vinicius Gabriel**
+* 🧑‍💻 **Elder Gomes(Líder de Projeto & Desenvolvedor Principal / Lead Engineer)**
+Atuação: Liderança estratégica do projeto e principal desenvolvedor do ecossistema. Atuou transversalmente na arquitetura fullstack, no desenvolvimento das regras de negócio e algoritmos na Engine Python (Machine Learning e Flask), na estruturação do banco de dados Supabase e na integração das Server Functions com a interface em React.
+* 🧑‍💻 **Erlan Moura(Cientista de Dados Co-desenvolvedor)**
+Atuação: Codesenvolvimento focado em pesquisa analítica, engenharia de recursos (Feature Engineering), análise estatística exploratória e apoio na modelagem matemática do classificador preditivo.
+* 🧑‍💻 **Halysson Silva(Engenheiro de Dados Co-desenvolvedor)**
+Atuação: Codesenvolvimento focado no pipeline de dados, atuando no tratamento, modelagem de tabelas e carga massiva da base de inteligência de mercado utilizando a infraestrutura do Apache Spark.  
+* 🧑‍💻 **Vinicius Gabriel(Desenvolvedor Frontend / UI-UX)**
+Atuação: Desenvolvimento focado na experiência do usuário, refinamento de componentes responsivos na interface React/Tailwind e mapeamento dos fluxos visuais de captura de leads.
 ```
